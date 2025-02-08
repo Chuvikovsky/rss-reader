@@ -36,7 +36,7 @@ export default {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'template.html',
+      template: 'index.html',
     }),
   ],
   entry: './src/index.js',
