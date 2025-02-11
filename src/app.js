@@ -1,5 +1,7 @@
 import * as yup from 'yup';
+import i18next from 'i18next';
 import watch from './view.js';
+import resources from './locales/index.js';
 
 const initialState = {
   urlForm: {
@@ -14,9 +16,23 @@ const elements = {
   formEl: document.querySelector('.rss-form'),
   inputEl: document.getElementById('url-input'),
   feedbackEl: document.querySelector('.feedback'),
+  labelEl: document.querySelector('label[for="url-input"]'),
+  buttonEl: document.querySelector('button'),
 };
 
-const state = watch(elements, initialState);
+const i18n = i18next.createInstance();
+i18n.init({
+  lng: 'ru',
+  resources,
+});
+
+const state = watch(elements, initialState, i18n);
+
+yup.setLocale({
+  string: {
+    url: 'errors.inValid',
+  },
+});
 
 const schema = yup.object().shape({
   url: yup
@@ -25,7 +41,7 @@ const schema = yup.object().shape({
     .required()
     .lowercase()
     .url()
-    .test('no double url', 'this url is already added', (val) => !state.urlForm.urls.includes(val)),
+    .test('no double url', 'errors.duplication', (val) => !state.urlForm.urls.includes(val)),
 });
 
 const validate = (data) => {
