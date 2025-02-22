@@ -1,22 +1,24 @@
 import * as yup from 'yup';
 import i18next from 'i18next';
 import axios from 'axios';
+import _ from 'lodash';
 import watch from './view.js';
 import resources from './locales/index.js';
 import parser from './parser.js';
 
-const feeds = [];
-const posts = [];
-
 const initialState = {
   urlForm: {
-    value: '',
+    value: '', // ?
     processState: 'filling', // 'success', 'error'
-    isFirstFeedShowed: false,
-    newFeedId: null,
-    showPostId: null,
+    isFirstFeedShowed: false, // ?
+    newFeedId: null, // ?
+    showPostWithId: null,
     error: false,
-    urls: [],
+    urlsSet: new Set(), // ?
+    visitedUrls: [],
+    feeds: [], // { id, title, desc, url, size }
+    posts: [], // { id, title, link, feedId, desc }
+    isAutoUpdateStarted: false,
   },
 };
 
@@ -28,10 +30,10 @@ const elements = {
   addButtonEl: document.querySelector('button[type="submit"]'),
   feedsEl: document.querySelector('.feeds'),
   postsEl: document.querySelector('.posts'),
-  readButtonEl: document.querySelector('.full-article'),
-  closeButtonEl: document.querySelector('.modal-footer button[data-bs-dismiss="modal"]'),
-  modalTitleEl: document.querySelector('.modal-title'),
-  modalDescEl: document.querySelector('.modal-body'),
+  readButtonEl: document.querySelector('.full-article'), // ?
+  closeButtonEl: document.querySelector('.modal-footer button[data-bs-dismiss="modal"]'), // ?
+  modalTitleEl: document.querySelector('.modal-title'), // ?
+  modalDescEl: document.querySelector('.modal-body'), // ?
 };
 
 const i18n = i18next.createInstance();
@@ -40,7 +42,38 @@ i18n.init({
   resources,
 });
 
-const state = watch(elements, initialState, i18n, feeds, posts);
+const state = watch(elements, initialState, i18n);
+
+const CheckForUpdates = () => {
+  const rssProxyUrl = 'https://allorigins.hexlet.app/get?disableCache=true';
+
+  const inner = () => {
+    const feedIds = state.urlForm.feeds.map((feed) => feed.id);
+    const urls = state.urlForm.feeds.map((feed) => feed.url);
+    Promise.all(urls.map((url) => axios.get(`${rssProxyUrl}&url=${encodeURIComponent(url)}`)))
+      .then((responses) => {
+        responses.forEach((response, idx) => {
+          const feedId = feedIds[idx];
+          const { posts: newPosts } = parser(response.data.contents);
+          const oldPosts = state.urlForm.posts.filter((post) => post.feedId === feedId);
+          const filteredNewPosts = _.differenceWith(
+            newPosts,
+            oldPosts,
+            (newPost, oldPost) => newPost.link === oldPost.link,
+          );
+          if (filteredNewPosts.length > 0) {
+            const startIndex = oldPosts.length;
+            const newUpdatedPosts = filteredNewPosts.map((post, index) => ({ ...post, feedId, id: `${feedId}${startIndex + index}` }));
+            state.urlForm.posts.unshift(...newUpdatedPosts);
+          }
+        });
+      }).catch((e) => {
+        console.log(e);
+      });
+    CheckForUpdates();
+  };
+  setTimeout(inner, 20000);
+};
 
 yup.setLocale({
   string: {
@@ -55,7 +88,7 @@ const schema = yup.object().shape({
     .required()
     .lowercase()
     .url()
-    .test('no double url', 'errors.duplication', (val) => !state.urlForm.urls.includes(val)),
+    .test('no double url', 'errors.duplication', (val) => !state.urlForm.feeds.find((feed) => feed.url === val)),
 });
 
 const validate = (data) => schema.validate(data); // Promise
@@ -70,22 +103,30 @@ export default () => {
     state.urlForm.value = data.get('url');
     validate({ url: data.get('url') })
       .then((validatedData) => {
-        state.urlForm.urls.push(validatedData.url);
-        state.urlForm.error = false;
-
         axios.get(`${rssProxyUrl}&url=${encodeURIComponent(validatedData.url)}`)
           .then((response) => {
             const feedId = Date.now().toString(16);
-            const { feed: newFeed, posts: newPosts } = parser(response.data.contents, feedId);
-            feeds.push(newFeed);
-            posts.push(...newPosts);
+            const {
+              feed: newFeed,
+              posts: newPosts,
+            } = parser(response.data.contents);
+            newFeed.id = feedId;
+            newFeed.url = validatedData.url;
+            newFeed.size = newPosts.length;
+            state.urlForm.feeds.unshift(newFeed);
+
+            const newUpdatedPosts = newPosts.map((post, index) => ({ ...post, feedId, id: `${feedId}${index}` }));
+            state.urlForm.posts.unshift(...newUpdatedPosts);
+
             state.urlForm.processState = 'success';
-            state.urlForm.isFirstFeedShowed = true;
-            state.urlForm.newFeedId = feedId;
+            if (!state.urlForm.isAutoUpdateStarted) {
+              CheckForUpdates();
+              state.urlForm.isAutoUpdateStarted = true;
+            }
           })
           .catch(() => {
-            state.urlForm.processState = 'error';
             state.urlForm.error = 'errors.unknown';
+            state.urlForm.processState = 'error';
           });
       })
       .catch((err) => {
@@ -96,6 +137,9 @@ export default () => {
 
   postsEl.addEventListener('click', (e) => {
     const { target } = e;
-    state.urlForm.showPostId = target.dataset.id;
+    const { id } = target.dataset;
+    state.urlForm.showPostWithId = id;
+    const { link } = state.urlForm.posts.find((post) => post.id === id);
+    state.urlForm.visitedUrls.push(link);
   });
 };

@@ -50,45 +50,43 @@ const getTitleSectionEl = (title) => {
   return div;
 };
 
-const showTitleSections = (elements, i18n) => {
-  const { feedsEl, postsEl } = elements;
-  const feedsTitleSectionEl = getTitleSectionEl(i18n.t('interface.feeds'));
-  const postsTitleSectionEl = getTitleSectionEl(i18n.t('interface.posts'));
-  feedsEl.append(feedsTitleSectionEl);
-  postsEl.append(postsTitleSectionEl);
-};
-
-const showNewFeed = (elements, i18n, feedId, feeds) => {
+const showFeeds = (elements, i18n, feeds) => {
   const { feedsEl } = elements;
-  const newFeed = feeds.find((f) => f.id === feedId);
-
-  const li = `<li class="list-group-item border-0 border-end-0">
-    <h3 class="h6 m-0">${newFeed.title}</h3>
-    <p class="m-0 small text-black-50">${newFeed.desc}</p>
-    </li>`;
+  feedsEl.innerHTML = '';
+  const feedsTitleSectionEl = getTitleSectionEl(i18n.t('interface.feeds'));
+  feedsEl.append(feedsTitleSectionEl);
   const ul = feedsEl.querySelector('ul');
-  ul.innerHTML = `${ul.innerHTML}${li}`;
+
+  const lis = feeds.map((feed) => `<li class="list-group-item border-0 border-end-0">
+    <h3 class="h6 m-0">${feed.title}</h3>
+    <p class="m-0 small text-black-50">${feed.desc}</p>
+    </li>`);
+
+  ul.innerHTML = lis.join('');
 };
 
-const showNewPosts = (elements, i18n, feedId, posts) => {
+const showPosts = (elements, i18n, posts, visitedUrls) => {
   const { postsEl } = elements;
-  const newPosts = posts.filter((p) => p.feedId === feedId);
+  postsEl.innerHTML = '';
+  const postsTitleSectionEl = getTitleSectionEl(i18n.t('interface.posts'));
+  postsEl.append(postsTitleSectionEl);
+  const ul = postsEl.querySelector('ul');
 
-  const lis = newPosts.map((post) => {
+  const lis = posts.map((post) => {
     const { id, title, link } = post;
+    const aClass = visitedUrls.includes(link) ? 'fw-normal link-secondary' : 'fw-bold';
     const htmlLi = `
     <li class="list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
-    <a href="${link}" class="fw-bold" data-id="${id}" target="_blank" rel="noopener noreferrer">${title}</a>
+    <a href="${link}" class="${aClass}" data-id="${id}" target="_blank" rel="noopener noreferrer">${title}</a>
     <button type="button" class="btn btn-outline-primary btn-sm" data-id="${id}" data-bs-toggle="modal" data-bs-target="#modal">${i18n.t('interface.view')}</button>
     </li>`;
     return htmlLi;
   });
 
-  const ul = postsEl.querySelector('ul');
   ul.innerHTML = `${ul.innerHTML}${lis.join('')}`;
 };
 
-const showPost = (elements, postId, posts) => {
+const showPostWithId = (elements, postId, posts) => {
   const { modalTitleEl, modalDescEl, readButtonEl } = elements;
   const post = posts.find((p) => p.id === postId);
   modalTitleEl.textContent = post.title;
@@ -99,7 +97,7 @@ const showPost = (elements, postId, posts) => {
   link.classList.add('fw-normal', 'link-secondary');
 };
 
-export default (elements, state, i18n, feeds, posts) => {
+export default (elements, state, i18n) => {
   const {
     inputEl, labelEl, addButtonEl, readButtonEl, closeButtonEl,
   } = elements;
@@ -117,15 +115,14 @@ export default (elements, state, i18n, feeds, posts) => {
       case 'urlForm.error':
         showError(elements, value, i18n);
         break;
-      case 'urlForm.newFeedId':
-        showNewPosts(elements, i18n, value, posts);
-        showNewFeed(elements, i18n, value, feeds);
+      case 'urlForm.feeds':
+        showFeeds(elements, i18n, value);
         break;
-      case 'urlForm.showPostId':
-        showPost(elements, value, posts);
+      case 'urlForm.posts':
+        showPosts(elements, i18n, value, state.urlForm.visitedUrls);
         break;
-      case 'urlForm.isFirstFeedShowed':
-        showTitleSections(elements, i18n);
+      case 'urlForm.showPostWithId':
+        showPostWithId(elements, value, state.urlForm.posts);
         break;
       default:
         break;
