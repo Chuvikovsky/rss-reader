@@ -56,6 +56,6 @@ export default {
     {
       module: /\.\/src\/styles.scss/,
     },
-    (warning) => true,
+    () => true,
   ],
 };

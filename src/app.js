@@ -6,17 +6,15 @@ import watch from './view.js';
 import resources from './locales/index.js';
 import parser from './parser.js';
 
+const rssProxyUrl = 'https://allorigins.hexlet.app/get?disableCache=true';
+
 const initialState = {
   urlForm: {
-    value: '', // ?
     processState: 'filling', // 'success', 'error'
-    isFirstFeedShowed: false, // ?
-    newFeedId: null, // ?
     showPostWithId: null,
     error: false,
-    urlsSet: new Set(), // ?
     visitedUrls: [],
-    feeds: [], // { id, title, desc, url, size }
+    feeds: [], // { id, title, desc, url }
     posts: [], // { id, title, link, feedId, desc }
     isAutoUpdateStarted: false,
   },
@@ -30,10 +28,10 @@ const elements = {
   addButtonEl: document.querySelector('button[type="submit"]'),
   feedsEl: document.querySelector('.feeds'),
   postsEl: document.querySelector('.posts'),
-  readButtonEl: document.querySelector('.full-article'), // ?
-  closeButtonEl: document.querySelector('.modal-footer button[data-bs-dismiss="modal"]'), // ?
-  modalTitleEl: document.querySelector('.modal-title'), // ?
-  modalDescEl: document.querySelector('.modal-body'), // ?
+  readButtonEl: document.querySelector('.full-article'),
+  closeButtonEl: document.querySelector('.modal-footer button[data-bs-dismiss="modal"]'),
+  modalTitleEl: document.querySelector('.modal-title'),
+  modalDescEl: document.querySelector('.modal-body'),
 };
 
 const i18n = i18next.createInstance();
@@ -45,11 +43,10 @@ i18n.init({
 const state = watch(elements, initialState, i18n);
 
 const CheckForUpdates = () => {
-  const rssProxyUrl = 'https://allorigins.hexlet.app/get?disableCache=true';
-
   const inner = () => {
     const feedIds = state.urlForm.feeds.map((feed) => feed.id);
     const urls = state.urlForm.feeds.map((feed) => feed.url);
+
     Promise.all(urls.map((url) => axios.get(`${rssProxyUrl}&url=${encodeURIComponent(url)}`)))
       .then((responses) => {
         responses.forEach((response, idx) => {
@@ -85,7 +82,7 @@ const schema = yup.object().shape({
   url: yup
     .string()
     .trim()
-    .required()
+    .required('errors.empty')
     .lowercase()
     .url()
     .test('no double url', 'errors.duplication', (val) => !state.urlForm.feeds.find((feed) => feed.url === val)),
@@ -95,12 +92,10 @@ const validate = (data) => schema.validate(data); // Promise
 
 export default () => {
   const { formEl, postsEl } = elements;
-  const rssProxyUrl = 'https://allorigins.hexlet.app/get?disableCache=true';
 
   formEl.addEventListener('submit', (e) => {
     e.preventDefault();
     const data = new FormData(formEl);
-    state.urlForm.value = data.get('url');
     validate({ url: data.get('url') })
       .then((validatedData) => {
         axios.get(`${rssProxyUrl}&url=${encodeURIComponent(validatedData.url)}`)
@@ -112,7 +107,6 @@ export default () => {
             } = parser(response.data.contents);
             newFeed.id = feedId;
             newFeed.url = validatedData.url;
-            newFeed.size = newPosts.length;
             state.urlForm.feeds.unshift(newFeed);
 
             const newUpdatedPosts = newPosts.map((post, index) => ({ ...post, feedId, id: `${feedId}${index}` }));
