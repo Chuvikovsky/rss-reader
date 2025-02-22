@@ -72,7 +72,7 @@ const CheckForUpdates = () => {
       });
     CheckForUpdates();
   };
-  setTimeout(inner, 20000);
+  setTimeout(inner, 5000);
 };
 
 yup.setLocale({
