@@ -127,7 +127,7 @@ export default (elements, state, i18n) => {
       default:
         break;
     }
-    watch.urlForm.processState = 'filling'; // to restart processState to treat two errors or succeses in a row
+    watch.urlForm.processState = 'filling'; // to restart processState to treat two errors or successes in a row
   });
 
   return watch;

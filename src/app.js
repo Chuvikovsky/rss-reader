@@ -111,15 +111,16 @@ export default () => {
 
             const newUpdatedPosts = newPosts.map((post, index) => ({ ...post, feedId, id: `${feedId}${index}` }));
             state.urlForm.posts.unshift(...newUpdatedPosts);
-
+            state.urlForm.error = '';
             state.urlForm.processState = 'success';
             if (!state.urlForm.isAutoUpdateStarted) {
               CheckForUpdates();
               state.urlForm.isAutoUpdateStarted = true;
             }
           })
-          .catch(() => {
-            state.urlForm.error = 'errors.unknown';
+          .catch((err) => {
+            console.log(err);
+            state.urlForm.error = 'errors.inValidRSS';
             state.urlForm.processState = 'error';
           });
       })
