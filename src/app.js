@@ -120,7 +120,7 @@ export default () => {
           })
           .catch((err) => {
             console.log(err);
-            state.urlForm.error = 'errors.inValidRSS';
+            state.urlForm.error = err.name === 'TypeError' ? 'errors.inValidRSS' : 'errors.net';
             state.urlForm.processState = 'error';
           });
       })
