@@ -1,7 +1,7 @@
 {
   "name": "@hexlet/code",
   "version": "0.1.0",
-  "description": "[![Actions Status](https://github.com/Chuvikovsky/frontend-project-11/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Chuvikovsky/frontend-project-11/actions)",
+  "description": "RSS Reader",
   "type": "module",
   "scripts": {
     "test": "jest --colors"
@@ -62,8 +62,8 @@
     "bootstrap": "^5.3.3",
     "i18next": "^24.2.2",
     "lodash": "^4.17.21",
-    "npm-check-updates": "^16.6.2",
     "on-change": "^5.0.1",
+    "uuid": "^11.1.0",
     "yup": "^1.6.1"
   }
 }

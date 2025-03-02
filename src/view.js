@@ -1,6 +1,6 @@
 import onChange from 'on-change';
 
-const handleProcessState = (elements, state, i18n) => {
+const handleProcessState = (elements, state) => {
   const { formEl, feedbackEl, inputEl } = elements;
   switch (state) {
     case 'filling':
@@ -11,7 +11,6 @@ const handleProcessState = (elements, state, i18n) => {
       inputEl.classList.add('is-invalid');
       break;
     case 'success':
-      feedbackEl.textContent = i18n.t('notification.success');
       feedbackEl.classList.add('text-success');
       feedbackEl.classList.remove('text-danger');
       inputEl.classList.remove('is-invalid');
@@ -23,10 +22,10 @@ const handleProcessState = (elements, state, i18n) => {
   }
 };
 
-const showError = (elements, error, i18n) => {
+const showNotification = (elements, notification, t) => {
   const { feedbackEl } = elements;
   feedbackEl.textContent = '';
-  feedbackEl.textContent = i18n.t(error);
+  feedbackEl.textContent = t(notification);
 };
 
 const getTitleSectionEl = (title) => {
@@ -50,10 +49,10 @@ const getTitleSectionEl = (title) => {
   return div;
 };
 
-const showFeeds = (elements, i18n, feeds) => {
+const showFeeds = (elements, t, feeds) => {
   const { feedsEl } = elements;
   feedsEl.innerHTML = '';
-  const feedsTitleSectionEl = getTitleSectionEl(i18n.t('interface.feeds'));
+  const feedsTitleSectionEl = getTitleSectionEl(t('interface.feeds'));
   feedsEl.append(feedsTitleSectionEl);
   const ul = feedsEl.querySelector('ul');
 
@@ -65,10 +64,10 @@ const showFeeds = (elements, i18n, feeds) => {
   ul.innerHTML = lis.join('');
 };
 
-const showPosts = (elements, i18n, posts, visitedUrls) => {
+const showPosts = (elements, t, posts, visitedUrls) => {
   const { postsEl } = elements;
   postsEl.innerHTML = '';
-  const postsTitleSectionEl = getTitleSectionEl(i18n.t('interface.posts'));
+  const postsTitleSectionEl = getTitleSectionEl(t('interface.posts'));
   postsEl.append(postsTitleSectionEl);
   const ul = postsEl.querySelector('ul');
 
@@ -78,7 +77,7 @@ const showPosts = (elements, i18n, posts, visitedUrls) => {
     const htmlLi = `
     <li class="list-group-item d-flex justify-content-between align-items-start border-0 border-end-0">
     <a href="${link}" class="${aClass}" data-id="${id}" target="_blank" rel="noopener noreferrer">${title}</a>
-    <button type="button" class="btn btn-outline-primary btn-sm" data-id="${id}" data-bs-toggle="modal" data-bs-target="#modal">${i18n.t('interface.view')}</button>
+    <button type="button" class="btn btn-outline-primary btn-sm" data-id="${id}" data-bs-toggle="modal" data-bs-target="#modal">${t('interface.view')}</button>
     </li>`;
     return htmlLi;
   });
@@ -97,37 +96,36 @@ const showPostWithId = (elements, postId, posts) => {
   link.classList.add('fw-normal', 'link-secondary');
 };
 
-export default (elements, state, i18n) => {
+export default (elements, state, t) => {
   const {
     inputEl, labelEl, addButtonEl, readButtonEl, closeButtonEl,
   } = elements;
-  inputEl.setAttribute('placeholder', i18n.t('interface.placehoder'));
-  labelEl.textContent = i18n.t('interface.label');
-  addButtonEl.textContent = i18n.t('interface.addButton');
-  readButtonEl.textContent = i18n.t('interface.read');
-  closeButtonEl.textContent = i18n.t('interface.close');
+  inputEl.setAttribute('placeholder', t('interface.placehoder'));
+  labelEl.textContent = t('interface.label');
+  addButtonEl.textContent = t('interface.addButton');
+  readButtonEl.textContent = t('interface.read');
+  closeButtonEl.textContent = t('interface.close');
 
   const watch = onChange(state, (path, value) => {
     switch (path) {
-      case 'urlForm.processState':
-        handleProcessState(elements, value, i18n);
+      case 'rssForm.processState':
+        handleProcessState(elements, value);
         break;
-      case 'urlForm.error':
-        showError(elements, value, i18n);
+      case 'rssForm.notification':
+        showNotification(elements, value, t);
         break;
-      case 'urlForm.feeds':
-        showFeeds(elements, i18n, value);
+      case 'rssForm.feeds':
+        showFeeds(elements, t, value);
         break;
-      case 'urlForm.posts':
-        showPosts(elements, i18n, value, state.urlForm.visitedUrls);
+      case 'rssForm.posts':
+        showPosts(elements, t, value, state.rssForm.visitedUrls);
         break;
-      case 'urlForm.showPostWithId':
-        showPostWithId(elements, value, state.urlForm.posts);
+      case 'rssForm.showPostWithId':
+        showPostWithId(elements, value, state.rssForm.posts);
         break;
       default:
         break;
     }
-    watch.urlForm.processState = 'filling'; // to restart processState to treat two errors or successes in a row
   });
 
   return watch;

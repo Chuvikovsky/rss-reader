@@ -1,12 +1,12 @@
 export default {
   translation: {
     errors: {
-      inValid: 'Ссылка должна быть валидным URL',
-      inValidRSS: 'Ресурс не содержит валидный RSS',
-      duplication: 'RSS уже существует',
+      invalidUrl: 'Ссылка должна быть валидным URL',
+      invalidRSS: 'Ресурс не содержит валидный RSS',
+      urlDuplication: 'RSS уже существует',
       unknown: 'Неизвестная ошибка. Что-то пошло не так.',
-      empty: 'Не должно быть пустым', // !
-      net: 'Ошибка сети', // !
+      empty: 'Не должно быть пустым',
+      noNetwork: 'Ошибка сети',
     },
     notification: {
       success: 'RSS успешно загружен',
