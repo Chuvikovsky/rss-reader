@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hexlet-boilerplates/webpack-package.git"
+    "url": "git+https://github.com/Chuvikovsky/frontend-project-11.git"
   },
-  "author": "Kirill Mokevnin",
+  "author": "Dmitry Chuvikovskiy",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hexlet-boilerplates/webpack-package/issues"
+    "url": "https://github.com/Chuvikovsky/frontend-project-11/issues"
   },
-  "homepage": "https://github.com/hexlet-boilerplates/webpack-package#readme",
+  "homepage": "https://github.com/Chuvikovsky/frontend-project-11#readme",
   "jest": {
     "verbose": true,
     "testEnvironmentOptions": {
