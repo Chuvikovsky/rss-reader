@@ -45,3 +45,5 @@ make install
 ```
 make build
 ```
+
+![RSS-reader](public/rss-1.png)
