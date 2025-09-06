@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Chuvikovsky/frontend-project-11.git"
+    "url": "git+https://github.com/Chuvikovsky/rss-reader.git"
   },
   "author": "Dmitry Chuvikovskiy",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Chuvikovsky/frontend-project-11/issues"
+    "url": "https://github.com/Chuvikovsky/rss-reader/issues"
   },
-  "homepage": "https://github.com/Chuvikovsky/frontend-project-11#readme",
+  "homepage": "https://github.com/Chuvikovsky/rss-reader#readme",
   "jest": {
     "verbose": true,
     "testEnvironmentOptions": {

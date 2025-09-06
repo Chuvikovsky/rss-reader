@@ -30,10 +30,10 @@ https://frontend-project-11-git-main-chuvikovskys-projects.vercel.app/
 - node - 20.15+
 - npm - 10.8+
 
-скопируйте репозиторий и перейдите в папку `frontend-project-11`
+скопируйте репозиторий и перейдите в папку `rss-reader`
 ```
-git clone https://github.com/Chuvikovsky/frontend-project-11.git
-cd frontend-project-11
+git clone https://github.com/Chuvikovsky/rss-reader.git
+cd rss-reader
 ```
 
 установите зависимости
@@ -45,5 +45,8 @@ make install
 ```
 make build
 ```
+
+Перейдите в папку `dist` и откройте файл `index.html`
+
 
 ![RSS-reader](public/rss-1.png)
